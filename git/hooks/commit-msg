@@ -1,0 +1,12 @@
+#!/bin/bash
+
+commit_msg_file=$1
+commit_msg=$(cat "$commit_msg_file")
+
+if ! echo "$commit_msg" | grep -Eq '^(DEV|BUG|TEST|DOC): .+'; then
+  echo "COMMIT: commit message must start with DEV:, BUG:, DOC:, or TEST: followed by text."
+  exit 1
+fi
+
+exit 0
+

@@ -1,0 +1,32 @@
+function devcommit() {
+	if [[ -z $1 ]];then
+		echo "commit message is needed"
+		return
+	fi
+	git commit -m "DEV: $1"
+}
+
+
+function doccommit() {
+        if [[ -z $1 ]];then
+                echo "commit message is needed"
+                return
+        fi
+        git commit -m "DOC: $1"
+}
+
+function bugcommit() {
+	if [[ -z $1 ]];then
+                echo "commit message is needed"
+                return
+        fi
+        git commit -m "BUG: $1"
+}
+
+function testcommit() {
+	if [[ -z $1 ]];then
+                echo "commit message is needed"
+                return
+        fi
+        git commit -m "TEST: $1"
+}

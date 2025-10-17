@@ -1,0 +1,20 @@
+alias vbm='VBoxManage'
+
+function vsh() {
+        if [[ -z $1 ]];then
+                echo "name of vm missing; select one:"
+                vbm list vms
+                return
+        fi
+        vbm startvm $1 --type=headless
+}
+
+function vacpi() {
+        if [[ -z $1 ]]; then
+                echo "name of vm missing; select one:"
+                vbm list runningvms
+                return
+        fi
+        vbm controlvm $1 acpipowerbutton
+}
+
