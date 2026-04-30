@@ -1,0 +1,20 @@
+devscript := "cv-dev.sh"
+install_dir := "/usr/local/bin/"
+tool_name := "cv"
+
+[private]
+default:
+    @just --list
+
+# Build the tool from dev version
+build:
+    cp {{devscript}} {{tool_name}}
+
+# Install the tool to installation directory.
+install: build
+    mv {{tool_name}} {{install_dir}}
+    chmod +x {{install_dir}}{{tool_name}}
+
+# CLean any stale artifacts
+clean:
+    rm -f {{tool_name}}
