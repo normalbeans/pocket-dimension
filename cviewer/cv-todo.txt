@@ -1,0 +1,34 @@
+======================================================================
+Title   : CViewer feature update notes
+Author  : nna
+Date    : 02-05-2026
+======================================================================
+
+1. Pending Features
+
+    - Print range of sections
+        Could impose restrictions such as allow range at same level or could keep it free
+        
+        +++
+        cv somefile.txt 1.-2.
+        or
+        cv somefile.txt 1-5.
+        or
+        cv somefile.txt 1.3-5.
+        +++
+
+    - Maybe add tree unicode symbols in index mode
+
+---
+
+2. Issues
+
+---
+
+3. Implementation notes
+ 
+---
+
+======================================================================
+Ending block
+======================================================================

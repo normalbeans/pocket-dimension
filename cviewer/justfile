@@ -15,6 +15,11 @@ install: build
     mv {{tool_name}} {{install_dir}}
     chmod +x {{install_dir}}{{tool_name}}
 
+# Create a executable copy for testing
+devbuild:
+    cp {{devscript}} {{tool_name}}
+    chmod +x {{tool_name}}
+
 # CLean any stale artifacts
 clean:
     rm -f {{tool_name}}
