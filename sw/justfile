@@ -1,0 +1,8 @@
+[private]
+default:
+    @just --list
+
+install_sw:
+    cp sw.sh sw
+    chmod +x sw
+    mv sw /usr/local/bin
