@@ -62,7 +62,7 @@ MEMINFO=$(awk -v PRIMARY="${PRIMARY}" -v NC="${NC}" -v SECONDARY="${SECONDARY}" 
         printf "%sMem :%s %s%dMi / %dMi%s\n", PRIMARY, NC, SECONDARY, used, total, NC
     }' /proc/meminfo)
 USERHOSTINFO="${PRIMARY}${USER}${NC}${SECONDARY} @ ${NC}${PRIMARY}${HOSTNAME}${NC}"
-SHELLINFO="${PRIMARY}Shell :${NC} ${SECONDARY}$(ps -p $$ -o comm=) ${BASH_VERSION%%(*}${NC}"
+SHELLINFO="${PRIMARY}Shell :${NC} ${SECONDARY}$(echo $(basename $(readlink /proc/$$/exe))) ${BASH_VERSION%%(*}${NC}"
 OSINFO=$(hostnamectl | awk -v PRIMARY="${PRIMARY}" -v NC="${NC}" -v SECONDARY="${SECONDARY}" 'BEGIN{FS=": "}/Operating System/ {printf "%sOS :%s %s%s%s", PRIMARY, NC, SECONDARY, $2, NC}')
 MODELINFO=$(hostnamectl | awk -v PRIMARY="${PRIMARY}" -v NC="${NC}" -v SECONDARY="${SECONDARY}" 'BEGIN{FS=": "}/Hardware Model/ {printf "%sModel :%s %s%s%s", PRIMARY, NC, SECONDARY, $2, NC}')
 STORAGEINFO=$(df -h / | awk -v PRIMARY="${PRIMARY}" -v NC="${NC}" -v SECONDARY="${SECONDARY}" 'NR==2 {printf "%sStorage :%s %s%dGi / %dGi%s\n", PRIMARY, NC, SECONDARY, $3, $2, NC}')
