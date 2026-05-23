@@ -67,19 +67,19 @@ rgbpattern="^${octet};${octet};${octet}$"
 while [[ $# -gt 0 ]];do
     case $1 in
         -p)
-            if [[ $2 =~ $pattern ]];then
+            if [[ $2 =~ $rgbpattern ]];then
                 PRGB=$2
             fi
             shift 2
         ;;
         -s)
-            if [[ $2 =~ $pattern ]];then
+            if [[ $2 =~ $rgbpattern ]];then
                 SRGB=$2
             fi
             shift 2
         ;;
         -a)
-            if [[ $2 =~ $pattern ]];then
+            if [[ $2 =~ $rgbpattern ]];then
                 ARGB=$2
             fi
             shift 2
