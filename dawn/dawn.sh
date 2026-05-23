@@ -56,7 +56,7 @@ ARGB="255;255;255"
 
 SCRIPTDIR="$(cd $(dirname $0) && pwd)"
 
-MODE="IMAGE"
+MODE="GRID"
 WIDTH=5
 HEIGHT=4
 IMAGEPATH="${SCRIPTDIR}/254.png"
@@ -106,7 +106,7 @@ NC=$'\e[0m'
 
 if [[ ! -f "$IMAGEPATH" ]];then
     # defaulting to grid genreration
-    MODE="IMAGE"
+    MODE="GRID"
 fi
 
 # INFO section
