@@ -1,23 +1,16 @@
 #!/bin/bash
 
+# dawm -p RGB -s RGB -a RGB -i <Image> --skip-image
 
-declare -a SAMPLEIMAGE
-PRIMARY=$'\e[38;2;170;130;255m'
-SECONDARY=$'\e[38;2;215;255;130m'
-ACCENT=$'\e[38;2;255;255;255m'
-NC=$'\e[0m'
-
+# generate random grid
 function generateGrid() {
 
     declare -A map
     declare -A quadrant
 
-    width=${1:-5}
-    height=${2:-4}
-
-
-    for (( i=0; i < height; i++ ));do
-        for (( j=0; j<width; j++ ));do
+    # random quadrant of WIDTH x HEIGHT
+    for (( i=0; i < HEIGHT; i++ ));do
+        for (( j=0; j<WIDTH; j++ ));do
             if (( RANDOM%2 ));then
                 quadrant[$i,$j]="${PRIMARY}"$'\u2588\u2588'"${NC}"
             else
@@ -26,18 +19,20 @@ function generateGrid() {
         done
     done
 
-    for (( i=0; i < height; i++ ));do
-        for (( j=0; j<width; j++ ));do
+    # map quadrant II to I, III and IV; axes as mirrors
+    for (( i=0; i < HEIGHT; i++ ));do
+        for (( j=0; j<WIDTH; j++ ));do
             map[$i,$j]=${quadrant[$i,$j]}
-            map[$i,$((2*width-1-j))]=${quadrant[$i,$j]}
-            map[$((2*height-1-i)),$((2*width-1-j))]=${quadrant[$i,$j]}
-            map[$((2*height-1-i)),$j]=${quadrant[$i,$j]}
+            map[$i,$((2*WIDTH-1-j))]=${quadrant[$i,$j]}
+            map[$((2*HEIGHT-1-i)),$((2*WIDTH-1-j))]=${quadrant[$i,$j]}
+            map[$((2*HEIGHT-1-i)),$j]=${quadrant[$i,$j]}
         done
     done
 
-    for (( i=0; i < 2*height; i++ )); do
+    # convert from matrix of blocks to array of rows
+    for (( i=0; i < 2*HEIGHT; i++ )); do
         row_string=""
-        for (( j=0; j<2*width; j++ )); do
+        for (( j=0; j<2*WIDTH; j++ )); do
             row_string+="${map[$i,$j]}"
         done
         SAMPLEIMAGE+=("$row_string")
@@ -45,6 +40,76 @@ function generateGrid() {
 
 }
 
+function generateImage() {
+    NWIDTH=$((WIDTH*4))
+    NHEIGHT=$((HEIGHT*2))
+    readarray -t SAMPLEIMAGE < <(chafa --size "${NWIDTH}x${NHEIGHT}" --stretch "${IMAGEPATH}")
+}
+
+
+# vars
+declare -a SAMPLEIMAGE
+
+PRGB="170;130;255"
+SRGB="215;255;130"
+ARGB="255;255;255"
+
+SCRIPTDIR="$(cd $(dirname $0) && pwd)"
+
+MODE="IMAGE"
+WIDTH=5
+HEIGHT=4
+IMAGEPATH="${SCRIPTDIR}/254.png"
+
+octet="(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
+rgbpattern="^${octet};${octet};${octet}$"
+
+while [[ $# -gt 0 ]];do
+    case $1 in
+        -p)
+            if [[ $2 =~ $pattern ]];then
+                PRGB=$2
+            fi
+            shift 2
+        ;;
+        -s)
+            if [[ $2 =~ $pattern ]];then
+                SRGB=$2
+            fi
+            shift 2
+        ;;
+        -a)
+            if [[ $2 =~ $pattern ]];then
+                ARGB=$2
+            fi
+            shift 2
+        ;;
+        -i)
+            IMAGEPATH=$2
+            shift 2
+        ;;
+        --no-image)
+            MODE="GRID"
+            shift 1
+        ;;
+        *)
+            printf "Unknown option: %s\n\nUsage: dawn -p \"R;G;B\" -s \"R;G;B\" -a \"R;G;B\" -i <image_path> [--no-image]"
+        ;;
+    esac
+done
+
+
+PRIMARY=$'\e[38;2;'"${PRGB}"$'m'
+SECONDARY=$'\e[38;2;'"${SRGB}"$'m'
+ACCENT=$'\e[38;2;'"${ARGB}"$'m'
+NC=$'\e[0m'
+
+if [[ ! -f "$IMAGEPATH" ]];then
+    # defaulting to grid genreration
+    MODE="IMAGE"
+fi
+
+# INFO section
 UPTIME=$(awk -v PRIMARY="${PRIMARY}" -v NC="${NC}" -v SECONDARY="${SECONDARY}" '{
     sysuptime=int($1)
     days=int(sysuptime/86400)
@@ -62,9 +127,10 @@ MEMINFO=$(awk -v PRIMARY="${PRIMARY}" -v NC="${NC}" -v SECONDARY="${SECONDARY}" 
         printf "%sMem :%s %s%dMi / %dMi%s\n", PRIMARY, NC, SECONDARY, used, total, NC
     }' /proc/meminfo)
 USERHOSTINFO="${PRIMARY}${USER}${NC}${SECONDARY} @ ${NC}${PRIMARY}${HOSTNAME}${NC}"
-SHELLINFO="${PRIMARY}Shell :${NC} ${SECONDARY}$(echo $(basename $(readlink /proc/$$/exe))) ${BASH_VERSION%%(*}${NC}"
-OSINFO=$(hostnamectl | awk -v PRIMARY="${PRIMARY}" -v NC="${NC}" -v SECONDARY="${SECONDARY}" 'BEGIN{FS=": "}/Operating System/ {printf "%sOS :%s %s%s%s", PRIMARY, NC, SECONDARY, $2, NC}')
-MODELINFO=$(hostnamectl | awk -v PRIMARY="${PRIMARY}" -v NC="${NC}" -v SECONDARY="${SECONDARY}" 'BEGIN{FS=": "}/Hardware Model/ {printf "%sModel :%s %s%s%s", PRIMARY, NC, SECONDARY, $2, NC}')
+SHELLINFO="${PRIMARY}Shell :${NC} ${SECONDARY}$(echo $(ps -p $(ps -p $$ -o tpgid=) -o comm=)) ${BASH_VERSION%%(*}${NC}"
+OSINFO=$(awk -F"=" -v PRIMARY="${PRIMARY}" -v NC="${NC}" -v SECONDARY="${SECONDARY}" '/PRETTY_NAME/ { gsub(/"/, "", $2); printf "%sOS :%s %s%s%s", PRIMARY, NC, SECONDARY, $2, NC }' /etc/os-release)
+MODELINFO="${PRIMARY}Model :${NC} ${SECONDARY}$(cat /sys/devices/virtual/dmi/id/product_name)${NC}"
+
 STORAGEINFO=$(df -h / | awk -v PRIMARY="${PRIMARY}" -v NC="${NC}" -v SECONDARY="${SECONDARY}" 'NR==2 {printf "%sStorage :%s %s%dGi / %dGi%s\n", PRIMARY, NC, SECONDARY, $3, $2, NC}')
 
 uinfocleaned=$(echo -n ${USERHOSTINFO} | sed 's/\x1b[[0-9;]*m//g')
@@ -80,17 +146,28 @@ INFOARRAY=("${USERHOSTINFO}" \
     "${STORAGEINFO}" \
     "${UPTIME}" )
 
+
+if ! which chafa > /dev/null; then
+        MODE="GRID"
+fi
+
+if [[ "${MODE}" == "GRID" ]];then
+    generateGrid
+else
+    generateImage
+fi
+
 if (( ${#SAMPLEIMAGE[@]} > ${#INFOARRAY[@]} ));then
     max=${#SAMPLEIMAGE[@]}
 else
     max=${#INFOARRAY[@]} 
 fi
 
-generateGrid
 
 clean_box_row=$(echo -n ${SAMPLEIMAGE[0]} | sed 's/\x1b[[0-9;]*m//g')
 
-printf $'\e[H\e[0J'"\n"
+# display here
+# printf $'\e[H\e[0J'"\n"
 for (( i=0; i<max ; i++ )) ;do
     printf "  %-${#clean_box_row}s \t  %s\n" "${SAMPLEIMAGE[$i]}"  "${INFOARRAY[$i]}"
 done
