@@ -172,4 +172,4 @@ printf $'\e[H\e[0J'"\n"
 for (( i=0; i<max ; i++ )) ;do
     printf "  %-${#clean_box_row}s \t  %s\n" "${SAMPLEIMAGE[$i]}"  "${INFOARRAY[$i]}"
 done
-printf "\n"
+#printf "\n"
