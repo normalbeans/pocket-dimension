@@ -128,7 +128,7 @@ MEMINFO=$(awk -v PRIMARY="${PRIMARY}" -v NC="${NC}" -v SECONDARY="${SECONDARY}" 
         printf "%sMem :%s %s%dMi / %dMi%s\n", PRIMARY, NC, SECONDARY, used, total, NC
     }' /proc/meminfo)
 USERHOSTINFO="${PRIMARY}${USER}${NC}${SECONDARY} @ ${NC}${PRIMARY}${HOSTNAME}${NC}"
-SHELLINFO="${PRIMARY}Shell :${NC} ${SECONDARY}$(echo $(ps -p $(ps -p $$ -o tpgid=) -o comm=)) ${BASH_VERSION%%(*}${NC}"
+SHELLINFO="${PRIMARY}Shell :${NC} ${SECONDARY}$(basename $SHELL) ${BASH_VERSION%%(*}${NC}"
 OSINFO=$(awk -F"=" -v PRIMARY="${PRIMARY}" -v NC="${NC}" -v SECONDARY="${SECONDARY}" '/PRETTY_NAME/ { gsub(/"/, "", $2); printf "%sOS :%s %s%s%s", PRIMARY, NC, SECONDARY, $2, NC }' /etc/os-release)
 MODELINFO="${PRIMARY}Model :${NC} ${SECONDARY}$(cat /sys/devices/virtual/dmi/id/product_name)${NC}"
 
