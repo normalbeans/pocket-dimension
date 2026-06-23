@@ -104,9 +104,13 @@ Date    : DD-MM-YYYY
 
     3.2. List entry
 
-        - List element A
-        - List element B
-        - List element C
+        - Unordered list element A
+        - Unordered list element B
+        - Unordered list element C
+
+        1. Ordered List element A
+        2. Ordered List element B
+        3. Ordered List element C
     
     3.3. Code Block
 
@@ -154,7 +158,7 @@ function colorify() {
             echo -e "${RED}${line}${NC}"
         elif [[ "${line}" =~ ^---$ ]];then
             echo -e "${YELLOW}${line}${NC}"
-        elif [[ "${line}" =~ ^[[:space:]]+\+\+\+$ ]];then
+        elif [[ "${line}" =~ ^[[:space:]]*\+\+\+$ ]];then
             if $code_block;then
                 code_block=false
             else
@@ -163,7 +167,7 @@ function colorify() {
             echo -e "${GREEN}${line}${NC}"
         elif [[ "${line}" =~ ^[[:space:]]*\>.*$ ]];then
             echo -e "${PURPLE}${line}${NC}"
-        elif [[ "${line}" =~ ^[[:space:]]*[0-9]+(\.[0-9]+)*\.?[[:space:]]+[A-Za-z0-9_' '?:-]+$ ]];then
+        elif [[ "${line}" =~ ^[[:space:]]*\[[0-9]+(\.[0-9]+)*\.?\][[:space:]]+[A-Za-z0-9_' '?:-]+$ ]];then
             echo -e "${BLUE}${line}${NC}"
         else
             if $code_block;then
@@ -194,17 +198,21 @@ case "${SECOND}" in
     ;;
     *)
         if [[ "${SECOND}" =~ $SECTION_REGEX ]];then
-            SECTION="${SECOND%.}."
-            awk -v SECTION=$SECTION \
-                '/^[[:space:]]*[0-9]+(\.[0-9]+)*\.?[[:space:]]+[A-Za-z0-9_ ?:-]+/ {
-                    if($1 == SECTION) {
+            SECTION="${SECOND%.}"
+            awk -v SECTION="$SECTION" \
+                '/^[[:space:]]*\[[0-9]+(\.[0-9]+)*\.?\][[:space:]]+[A-Za-z0-9_ ?:-]+/ {
+                    c=$1
+                    gsub(/^\[|\.?\]$/, "", c)
+                    if(c == SECTION) {
                         secbegin=1; 
-                        level=split($1,parts, ".");
+                        level=split(c,parts, ".");
                         print $0; 
                         next;}
                     } 
-                secbegin && /^[[:space:]]*[0-9]+(\.[0-9]+)*\.?[[:space:]]+[A-Za-z0-9_ ?:-]+/ {
-                    clevel=split($1, parts, ".");
+                secbegin && /^[[:space:]]*\[[0-9]+(\.[0-9]+)*\.?\][[:space:]]+[A-Za-z0-9_ ?:-]+/ {
+                    c=$1
+                    gsub(/^\[|\.?\]$/, "", c)
+                    clevel=split(c, parts, ".");
                     if (clevel <= level) {
                         secbegin=0; next
                     }
@@ -212,7 +220,7 @@ case "${SECOND}" in
                 secbegin && /^===*|^---$/ {secbegin=0; next}
                 secbegin {print $0}' $FILENAME | colorify
         else
-            echo -e "${RED}ERROR${NC}: Uknown option ${SECOND}"
+            echo -e "${RED}ERROR${NC}: Unknown option ${SECOND}"
             usage
             exit 1
         fi

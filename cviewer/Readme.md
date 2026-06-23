@@ -4,10 +4,11 @@ Custom rich text reader utility. For personal use to maintain consistent and uni
 
 ```
 Usage: cv <filename>.txt <OPTION>
-        OR
+            OR
        cv help|-h
 
-  OPTION:
+OPTION:
+    
     help, -h        - Prints usage information (you are reading this)
     index, -i       - Returns a list of headings and subheadings in the file.
     SECTION         - Returns the content of the section.
