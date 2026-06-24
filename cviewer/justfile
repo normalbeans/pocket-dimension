@@ -16,7 +16,7 @@ install: build
     chmod +x {{install_dir}}{{tool_name}}
 
 # Create a executable copy for testing
-devbuild:
+dev:
     cp {{devscript}} {{tool_name}}
     chmod +x {{tool_name}}
 

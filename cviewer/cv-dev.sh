@@ -191,7 +191,15 @@ case "${SECOND}" in
         generateTemplate $FILENAME
     ;;
     "index" | "-i")
-        awk '/^[[:space:]]*[0-9]+(\.[0-9]+)*\.?[[:space:]]+[A-Za-z0-9_ ?:-]+$/ {print $0}' $FILENAME
+        echo -e "${PURPLE}${FILENAME}${NC}"
+        awk '/^[[:space:]]*\[[0-9]+(\.[0-9]+)*\.?\][[:space:]]+[A-Za-z0-9_ ?:-]+$/ {
+            c=$1;
+            gsub(/^\[|\.?\]$/, "", c);
+            level=split(c, parts, ".");
+            sub(/^[ \t]+/, "", $0);
+            printf "%*s %s %s\n", level*2, " ", "\xE2\x94\x94\xE2\x94\x80" , $0
+        }' $FILENAME
+
     ;;
     "view")
         cat $FILENAME | colorify
@@ -201,8 +209,8 @@ case "${SECOND}" in
             SECTION="${SECOND%.}"
             awk -v SECTION="$SECTION" \
                 '/^[[:space:]]*\[[0-9]+(\.[0-9]+)*\.?\][[:space:]]+[A-Za-z0-9_ ?:-]+/ {
-                    c=$1
-                    gsub(/^\[|\.?\]$/, "", c)
+                    c=$1;
+                    gsub(/^\[|\.?\]$/, "", c);
                     if(c == SECTION) {
                         secbegin=1; 
                         level=split(c,parts, ".");
@@ -210,8 +218,8 @@ case "${SECOND}" in
                         next;}
                     } 
                 secbegin && /^[[:space:]]*\[[0-9]+(\.[0-9]+)*\.?\][[:space:]]+[A-Za-z0-9_ ?:-]+/ {
-                    c=$1
-                    gsub(/^\[|\.?\]$/, "", c)
+                    c=$1;
+                    gsub(/^\[|\.?\]$/, "", c);
                     clevel=split(c, parts, ".");
                     if (clevel <= level) {
                         secbegin=0; next
