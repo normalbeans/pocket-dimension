@@ -32,7 +32,8 @@ BLUE="\033[38;2;89;198;255m"
 YELLOW="\033[33m"
 NC="\033[0m"
 
-SECTION_REGEX='[0-9]+(\.[0-9]+)*\.?'
+SECTION_REGEX='^[0-9]+(\.[0-9]+)*\.?$'
+SECTION_RANGE_REGEX='^[0-9]+(\.[0-9]+)*\.?-[0-9]+(\.[0-9]+)*\.?$'
 
 if [[ "${FILENAME}" == "help" || "${FILENAME}" == "-h" ]];then
     usage
@@ -206,6 +207,7 @@ case "${SECOND}" in
     ;;
     *)
         if [[ "${SECOND}" =~ $SECTION_REGEX ]];then
+            
             SECTION="${SECOND%.}"
             awk -v SECTION="$SECTION" \
                 '/^[[:space:]]*\[[0-9]+(\.[0-9]+)*\.?\][[:space:]]+[A-Za-z0-9_ ?:-]+/ {
@@ -227,6 +229,52 @@ case "${SECOND}" in
                 } 
                 secbegin && /^===*|^---$/ {secbegin=0; next}
                 secbegin {print $0}' $FILENAME | colorify
+        elif [[ "${SECOND}" =~ $SECTION_RANGE_REGEX ]];then
+            FROM="${SECOND%-*}"
+            TO="${SECOND#*-}"
+            FROM="${FROM%.}"
+            TO="${TO%.}"
+
+            # the ending trigger is based on assumption that headings are ordered in file.
+
+            awk -v FROM="$FROM" -v TO="$TO" \
+                '
+                function isChildOfTo(section) {
+                    l=split(section, lparts, ".")
+                    r=split(TO, rparts, ".")
+
+                    return (l > r) 
+                }
+                /^[[:space:]]*\[[0-9]+(\.[0-9]+)*\.?\][[:space:]]+[A-Za-z0-9_ ?:-]+/ {
+                    c=$1
+                    gsub(/^\[|\.?\]$/, "", c);
+                    if (c == FROM) {
+                        rangebegin=1;
+                        print $0;
+                        next;
+                    }
+                }
+                rangebegin && /^[[:space:]]*\[[0-9]+(\.[0-9]+)*\.?\][[:space:]]+[A-Za-z0-9_ ?:-]+/ {
+                    c=$1;
+                    gsub(/^\[|\.?\]$/, "", c);
+                    if (c == TO) {
+                        rangebegin=0;
+                        finishPrint=1;
+                        next;
+                    }
+                } 
+
+                finishPrint && /^[[:space:]]*\[[0-9]+(\.[0-9]+)*\.?\][[:space:]]+[A-Za-z0-9_ ?:-]+/ {
+                    c=$1;
+                    gsub(/^\[|\.?\]$/, "", c);
+                    if (! isChildOfTo(c)) {
+                        finishPrint = 0;
+                        next;
+                    }
+                }
+                rangebegin || finishPrint {print $0}
+                ' $FILENAME | colorify
+
         else
             echo -e "${RED}ERROR${NC}: Unknown option ${SECOND}"
             usage
