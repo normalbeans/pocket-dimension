@@ -4,8 +4,7 @@ Author  : nna
 Date    : 02-05-2026
 ======================================================================
 
-
-1. Implementation notes
+[1.] Implementation notes
  
 ---
 
